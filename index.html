@@ -1,2 +1,114 @@
-<h1 style="color:red">hello</h1>
-<button>Click me!!!!!!</button>
+<title>My Website</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --red: #e00000;
+    --yes: #1f9d55;
+    --yes-fg: #ffffff;
+    --no: #e9e9ee;
+    --no-fg: #1a1a1a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141416; --fg: #f2f2f4; --red: #ff4d4d;
+      --yes: #2bb673; --no: #2c2c32; --no-fg: #f2f2f4; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141416; --fg: #f2f2f4; --red: #ff4d4d;
+    --yes: #2bb673; --no: #2c2c32; --no-fg: #f2f2f4; color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding-block: 24px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    overflow: hidden;
+  }
+  h1 { color: var(--red); }
+  .question { font-size: 1.4rem; margin: 32px 0 16px; }
+  .choices { display: flex; gap: 12px; align-items: center; }
+  .choices button, .click-me { font: inherit; cursor: pointer; }
+  .yes, .no {
+    border: 0; border-radius: 8px; padding: 10px 28px; font-size: 1.1rem; font-weight: 600;
+  }
+  .yes { background: var(--yes); color: var(--yes-fg); }
+  .no  { background: var(--no); color: var(--no-fg); transition: left .18s ease-out, top .18s ease-out; }
+  .no.running { position: fixed; z-index: 5; }
+  button:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+  .result { margin-top: 20px; font-size: 1.2rem; font-weight: 600; }
+  @media (prefers-reduced-motion: reduce) { .no { transition: none; } }
+</style>
+
+<h1>hello</h1>
+<button class="click-me">Click me!!!!!!</button>
+
+<p class="question">Do you like my website?</p>
+<div class="choices">
+  <button class="yes" id="yesBtn" type="button">Yes</button>
+  <button class="no" id="noBtn" type="button">No</button>
+</div>
+<p class="result" id="result" hidden>Thank you! 🎉</p>
+
+<script>
+  const noBtn = document.getElementById('noBtn');
+  const yesBtn = document.getElementById('yesBtn');
+  const result = document.getElementById('result');
+  const SAFE = 110; // how close (px) the cursor can get before No runs away
+
+  function runAway(cx, cy) {
+    const r = noBtn.getBoundingClientRect();
+    if (!noBtn.classList.contains('running')) {
+      noBtn.style.left = r.left + 'px';
+      noBtn.style.top = r.top + 'px';
+      noBtn.classList.add('running');
+    }
+    const pad = 16;
+    const maxX = window.innerWidth - r.width - pad;
+    const maxY = window.innerHeight - r.height - pad;
+    let x, y, tries = 0;
+    do {
+      x = pad + Math.random() * Math.max(0, maxX - pad);
+      y = pad + Math.random() * Math.max(0, maxY - pad);
+      tries++;
+    } while (Math.hypot(x + r.width / 2 - cx, y + r.height / 2 - cy) < SAFE * 2 && tries < 30);
+    noBtn.style.left = x + 'px';
+    noBtn.style.top = y + 'px';
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    const r = noBtn.getBoundingClientRect();
+    const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right);
+    const dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
+    if (Math.hypot(dx, dy) < SAFE) runAway(e.clientX, e.clientY);
+  });
+
+  // Phones: jump away the moment it's touched
+  noBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const t = e.touches[0];
+    runAway(t.clientX, t.clientY);
+  }, { passive: false });
+
+  // Keyboard users can't catch it either
+  noBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const r = noBtn.getBoundingClientRect();
+    runAway(r.left + r.width / 2, r.top + r.height / 2);
+  });
+
+  window.addEventListener('resize', () => {
+    if (!noBtn.classList.contains('running')) return;
+    const r = noBtn.getBoundingClientRect();
+    if (r.right > window.innerWidth || r.bottom > window.innerHeight) runAway(-999, -999);
+  });
+
+  yesBtn.addEventListener('click', () => { result.hidden = false; });
+</script>
