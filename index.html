@@ -45,6 +45,15 @@
   button:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
   .result { margin-top: 20px; font-size: 1.2rem; font-weight: 600; }
   @media (prefers-reduced-motion: reduce) { .no { transition: none; } }
+  .dropdowns { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 28px; }
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 200px; }
+  .field label { font-size: .95rem; font-weight: 600; }
+  .field select {
+    font: inherit; padding: 8px 12px; border-radius: 8px;
+    border: 1px solid var(--no); background: var(--bg); color: var(--fg); cursor: pointer;
+  }
+  .field select:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+  .pick-summary { margin-top: 14px; min-height: 1.4em; }
 </style>
 
 <h1>hello</h1>
@@ -56,6 +65,30 @@
   <button class="no" id="noBtn" type="button">No</button>
 </div>
 <p class="result" id="result" hidden>Thank you! 🎉</p>
+
+<div class="dropdowns">
+  <div class="field">
+    <label for="favPart">Favourite part?</label>
+    <select id="favPart">
+      <option value="">Choose one…</option>
+      <option>The red heading</option>
+      <option>The Click me button</option>
+      <option>The runaway No button</option>
+      <option>All of it</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="foundVia">How did you find this site?</label>
+    <select id="foundVia">
+      <option value="">Choose one…</option>
+      <option>A friend</option>
+      <option>Social media</option>
+      <option>Search engine</option>
+      <option>Pure luck</option>
+    </select>
+  </div>
+</div>
+<p class="pick-summary" id="pickSummary" aria-live="polite"></p>
 
 <script>
   const noBtn = document.getElementById('noBtn');
@@ -111,4 +144,16 @@
   });
 
   yesBtn.addEventListener('click', () => { result.hidden = false; });
+
+  const favPart = document.getElementById('favPart');
+  const foundVia = document.getElementById('foundVia');
+  const pickSummary = document.getElementById('pickSummary');
+  function updateSummary() {
+    const parts = [];
+    if (favPart.value) parts.push(`You love: ${favPart.value}`);
+    if (foundVia.value) parts.push(`Found via: ${foundVia.value}`);
+    pickSummary.textContent = parts.join(' · ');
+  }
+  favPart.addEventListener('change', updateSummary);
+  foundVia.addEventListener('change', updateSummary);
 </script>
